@@ -42,24 +42,24 @@ const Overview = styled.div`
 
 const TopSlider = styled(motion.div)`
     position: relative;
+    width: 100vw;
     top: -100px;
-    margin-bottom: 200px;
     padding: 0px 60px;
+    margin-bottom: 50px;
 `
 
 const OtherSlider = styled(motion.div)`
     position: relative;
-    top: -100px;
-    margin-bottom: 200px;
+    width: 100vw;
     padding: 0px 60px;
+    top: -100px;
+    margin-bottom: 50px;
 `
  
 const Row = styled(motion.div)`
     display: grid;
     gap: 5px;
     grid-template-columns: repeat(6, 1fr);
-    position: absolute;
-    width: 93%;
 `
 
 const PrevBtn = styled(motion.div)`
@@ -72,7 +72,7 @@ const PrevBtn = styled(motion.div)`
 
 const NextBtn = styled(motion.div)`
     position: absolute;
-    right: 5px;
+    right: 7px;
     top: 100px;
     opacity: 0;
     cursor: pointer;
@@ -99,8 +99,8 @@ const Info = styled(motion.div)`
     padding: 10px;
     background-color: ${props => props.theme.black.lighter};
     opacity: 0;
+    position: absolute;
     width: 100%;
-    margin-top: 150px;
     bottom: 0;
     h4 {
         text-align: center;
@@ -335,89 +335,33 @@ function Home () {
                 </Banner>
                 {/* 최신작(Latest) */}
                 <TopSlider>
-                <SliderTitle>인기 영화 Top 20</SliderTitle>
-                    <PrevBtn onClick={() => increasePopularIndex("dec")} whileHover={{opacity: 1}}>
-                        <FcPrevious size="50" />
-                    </PrevBtn>
-                    <AnimatePresence initial={false} onExitComplete={() => setLeaving(false)} custom={back}>
+                    <SliderTitle>추천 최신작</SliderTitle>
+                    <AnimatePresence initial={false} onExitComplete={() => setLeaving(false)}>
                         <Row 
                             variants={rowVariants} 
-                            custom={back}
                             initial="hidden" 
                             animate="visible" 
-                            exit="exit" 
-                            key={popularIndex}
-                            transition={{type: "tween", duration: 0.7}}
+                            transition={{type: "tween", duration: 0.5}}
                         >
-                            {popularMovies?.results
-                                .slice(offset*popularIndex, offset*popularIndex+offset)
-                                .map(movie => (
-                                    <Box 
-                                        layoutId={"popular_" + movie.id + ""}
-                                        bgphoto={makeImagePath(movie.backdrop_path, 'w500')} 
-                                        key={movie.id + 4}
-                                        variants={boxVariants}
-                                        whileHover="hover"
-                                        transition={{type: "tween"}}
-                                        initial="normal"
-                                        onClick={() => onBoxClicked(movie.id, SliderType.P)}
-                                    >
-                                        <Info 
-                                            variants={infoVariants}
-                                        >
-                                            <h4>{movie.title}</h4>
-                                        </Info>
-                                    </Box>
-                                ))}
+                            <Box 
+                                layoutId={latestMovie?.id + ""}
+                                bgphoto={makeImagePath(latestMovie?.poster_path || "", 'w500')} 
+                                variants={boxVariants}
+                                whileHover="hover"
+                                transition={{type: "tween"}}
+                                initial="normal"
+                                onClick={() => onBoxClicked(latestMovie?.id || 0)}
+                            >
+                                <Info 
+                                    variants={infoVariants}
+                                >
+                                    <h4>{latestMovie?.title}</h4>
+                                </Info>
+                            </Box>
                         </Row>
                     </AnimatePresence>
-                    <NextBtn whileHover={{opacity: 1}}>
-                        <FcNext onClick={() => increasePopularIndex("inc")} style={{color: 'white'}} size="50" />
-                    </NextBtn>
                 </TopSlider>
-                {/* NowPlaying Movie */}
-                <OtherSlider>
-                    <SliderTitle>현재 상영 영화</SliderTitle>
-                    <PrevBtn onClick={() => increaseIndex("dec")} whileHover={{opacity: 1}}>
-                        <FcPrevious size="50" />
-                    </PrevBtn>
-                    <AnimatePresence initial={false} onExitComplete={() => setLeaving(false)} custom={back}>
-                        <Row 
-                            variants={rowVariants} 
-                            custom={back}
-                            initial="hidden" 
-                            animate="visible" 
-                            exit="exit" 
-                            key={index}
-                            transition={{type: "tween", duration: 0.7}}
-                        >
-                            {nowMovies?.results
-                                .slice(1)
-                                .slice(offset*index, offset*index+offset)
-                                .map(movie => (
-                                    <Box 
-                                        layoutId={"now_" + movie.id + ""}
-                                        bgphoto={makeImagePath(movie.backdrop_path, 'w500')} 
-                                        key={movie.id + 1}
-                                        variants={boxVariants}
-                                        whileHover="hover"
-                                        transition={{type: "tween"}}
-                                        initial="normal"
-                                        onClick={() => onBoxClicked(movie.id, SliderType.N)}
-                                    >
-                                        <Info 
-                                            variants={infoVariants}
-                                        >
-                                            <h4>{movie.title}</h4>
-                                        </Info>
-                                    </Box>
-                                ))}
-                        </Row>
-                    </AnimatePresence>
-                    <NextBtn whileHover={{opacity: 1}}>
-                        <FcNext onClick={() => increaseIndex("inc")} style={{color: 'white'}} size="50" />
-                    </NextBtn>
-                </OtherSlider>
+                
                 {/* Top Rated Movies */}
                 <OtherSlider>
                     <SliderTitle>최고평점 Top 20</SliderTitle>
@@ -504,31 +448,45 @@ function Home () {
                 </OtherSlider>
                 {/* Popular Movies */}
                 <OtherSlider>
-                <SliderTitle>추천 최신작</SliderTitle>
-                    <AnimatePresence initial={false} onExitComplete={() => setLeaving(false)}>
+                    <SliderTitle>인기 영화 Top 20</SliderTitle>
+                    <PrevBtn onClick={() => increasePopularIndex("dec")} whileHover={{opacity: 1}}>
+                        <FcPrevious size="50" />
+                    </PrevBtn>
+                    <AnimatePresence initial={false} onExitComplete={() => setLeaving(false)} custom={back}>
                         <Row 
                             variants={rowVariants} 
+                            custom={back}
                             initial="hidden" 
                             animate="visible" 
-                            transition={{type: "tween", duration: 0.5}}
+                            exit="exit" 
+                            key={popularIndex}
+                            transition={{type: "tween", duration: 0.7}}
                         >
-                            <Box 
-                                layoutId={latestMovie?.id + ""}
-                                bgphoto={makeImagePath(latestMovie?.poster_path || "", 'w500')} 
-                                variants={boxVariants}
-                                whileHover="hover"
-                                transition={{type: "tween"}}
-                                initial="normal"
-                                onClick={() => onBoxClicked(latestMovie?.id || 0)}
-                            >
-                                <Info 
-                                    variants={infoVariants}
-                                >
-                                    <h4>{latestMovie?.title}</h4>
-                                </Info>
-                            </Box>
+                            {popularMovies?.results
+                                .slice(offset*popularIndex, offset*popularIndex+offset)
+                                .map(movie => (
+                                    <Box 
+                                        layoutId={"popular_" + movie.id + ""}
+                                        bgphoto={makeImagePath(movie.backdrop_path, 'w500')} 
+                                        key={movie.id + 4}
+                                        variants={boxVariants}
+                                        whileHover="hover"
+                                        transition={{type: "tween"}}
+                                        initial="normal"
+                                        onClick={() => onBoxClicked(movie.id, SliderType.P)}
+                                    >
+                                        <Info 
+                                            variants={infoVariants}
+                                        >
+                                            <h4>{movie.title}</h4>
+                                        </Info>
+                                    </Box>
+                                ))}
                         </Row>
                     </AnimatePresence>
+                    <NextBtn whileHover={{opacity: 1}}>
+                        <FcNext onClick={() => increasePopularIndex("inc")} style={{color: 'white'}} size="50" />
+                    </NextBtn>
                 </OtherSlider>
                 <AnimatePresence>
                     {bigMovieMatch ? (
