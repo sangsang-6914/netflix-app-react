@@ -1,7 +1,7 @@
 const API_KEY = '9a5651422bd236785b93b1767b7811d8'
 const BASE_PATH = 'https://api.themoviedb.org/3/tv'
 
-interface ITvs {
+export interface ITvs {
     backdrop_path: string;
     first_air_date: string;
     id: number;

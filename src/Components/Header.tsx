@@ -1,7 +1,7 @@
 import { motion, useAnimation, useViewportScroll } from "framer-motion";
 import styled from "styled-components";
 import { Link, useHistory, useRouteMatch } from 'react-router-dom'
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 const Nav = styled(motion.nav)`
@@ -130,6 +130,7 @@ function Header() {
     const tvMatch = useRouteMatch("/tv")
     const inputAnimation = useAnimation()
     const navAnimation = useAnimation()
+    const searchInput = useRef<HTMLInputElement>(null)
     const {scrollY} = useViewportScroll()
     const toggleSearch = () => {
         if (searchOpen) {
@@ -141,6 +142,7 @@ function Header() {
                 scaleX: 1
             })
         }
+        searchInput?.current?.focus()
         setSearchOpen(prev => !prev)
     }
     useEffect(() => {

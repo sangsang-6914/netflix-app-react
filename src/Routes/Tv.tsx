@@ -363,6 +363,7 @@ function Tv() {
                                             variants={boxVariants}
                                             whileHover="hover"
                                             animate="normal"
+                                            transition={{type: "tween"}}
                                             layoutId={`onairing_${tv.id}`}
                                             onClick={() => onClickTv(tv.id, SliderType.OA)}
                                         >
@@ -406,6 +407,7 @@ function Tv() {
                                                 variants={boxVariants}
                                                 whileHover="hover"
                                                 animate="normal"
+                                                transition={{type: "tween"}}
                                                 layoutId={"onair_"+tv.id}
                                                 onClick={() => onClickTv(tv.id, SliderType.O)}
                                             >
@@ -448,6 +450,7 @@ function Tv() {
                                             variants={boxVariants}
                                             whileHover="hover"
                                             animate="normal"
+                                            transition={{type: "tween"}}
                                             layoutId={`top_${tv.id}`}
                                             onClick={() => onClickTv(tv.id, SliderType.T)}
                                         >
@@ -490,6 +493,7 @@ function Tv() {
                                             variants={boxVariants}
                                             whileHover="hover"
                                             animate="normal"
+                                            transition={{type: "tween"}}
                                             layoutId={`popular_${tv.id}`}
                                             onClick={() => onClickTv(tv.id, SliderType.P)}
                                        >
@@ -514,6 +518,7 @@ function Tv() {
                                 variants={boxVariants}
                                 whileHover="hover"
                                 animate="normal"
+                                transition={{type: "tween"}}
                                 bgphoto={makeImagePath(latestTv?.backdrop_path || "", 'w500')}
                                 onClick={() => onClickTv(latestTv?.id || 0)}
                                 layoutId={latestTv?.id + ""}
