@@ -113,7 +113,7 @@ const Overlay = styled(motion.div)`
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0,0,0,0.7);
     opacity: 0;
 `
 
@@ -201,6 +201,13 @@ const infoVariants = {
 
 const offset = 6
 
+enum SliderType {
+    "N" = "N",
+    "T" = "T",
+    "U" = "U",
+    "P" = "P"
+}
+
 function Home () {
     const history = useHistory()
     const bigMovieMatch = useRouteMatch<{movieId: string}>("/movies/:movieId")
@@ -218,6 +225,7 @@ function Home () {
     const [upComingIndex, setUpComingIndex] = useState(0)
     const [popularIndex, setPopularIndex] = useState(0)
     const [leaving, setLeaving] = useState(false)
+    const [sliderType, setSliderType] = useState<SliderType|null>(null)
     const increaseIndex = (type: string) => {
         if (nowMovies) {
             if (leaving) return
@@ -283,16 +291,38 @@ function Home () {
         }
     }
 
-    const onBoxClicked = (movieId: number) => {
+    const onBoxClicked = (movieId: number, sliderType?: SliderType) => {
+        if (sliderType) {
+            setSliderType(sliderType)
+        } else {
+            setSliderType(null)
+        }
         history.push(`/movies/${movieId}`)
     }
     const onOverlayClick = () => {
         history.push('/')
     }
-    const clickedMovie = bigMovieMatch?.params.movieId && 
+
+    console.log(sliderType)
+
+    const clickedMovie = sliderType === null && bigMovieMatch?.params.movieId && 
+        latestMovie
+
+    console.log(clickedMovie)
+
+    const nowClickedMovie = sliderType === SliderType.N && bigMovieMatch?.params.movieId &&
         nowMovies?.results.find(movie => String(movie.id) === bigMovieMatch.params.movieId)
 
-    const isLoading = nowMoviesLoading || latestMovieLoading || topRatedMoviesLoading || upComingMoviesLoading
+    const topRatedClickedMovie = sliderType === SliderType.T && bigMovieMatch?.params.movieId &&
+        topRatedMovies?.results.find(movie => String(movie.id) === bigMovieMatch.params.movieId)
+
+    const upComingClickedMovie = sliderType === SliderType.U && bigMovieMatch?.params.movieId &&
+        upComingMovies?.results.find(movie => String(movie.id) === bigMovieMatch.params.movieId)
+
+    const popularClickedMovied = sliderType === SliderType.P && bigMovieMatch?.params.movieId &&
+        popularMovies?.results.find(movie => String(movie.id) === bigMovieMatch.params.movieId)
+
+    const isLoading = nowMoviesLoading || latestMovieLoading || topRatedMoviesLoading || upComingMoviesLoading || popularMoviesLoading
 
     return (
         <Wrapper>{isLoading ? 
@@ -302,7 +332,7 @@ function Home () {
                     <Title>{nowMovies?.results[0].title}</Title>
                     <Overview>{nowMovies?.results[0 ].overview}</Overview>
                 </Banner>
-                {/* 최신작 */}
+                {/* 최신작(Latest) */}
                 <TopSlider>
                     <SliderTitle>추천 최신작</SliderTitle>
                     <AnimatePresence initial={false} onExitComplete={() => setLeaving(false)}>
@@ -330,9 +360,9 @@ function Home () {
                         </Row>
                     </AnimatePresence>
                 </TopSlider>
-                {/* Latest Movies */}
+                {/* NowPlaying Movie */}
                 <OtherSlider>
-                    <SliderTitle>개봉영화 Top 20</SliderTitle>
+                    <SliderTitle>현재 상영 영화</SliderTitle>
                     <PrevBtn onClick={() => increaseIndex("dec")} whileHover={{opacity: 1}}>
                         <FcPrevious size="50" />
                     </PrevBtn>
@@ -351,14 +381,14 @@ function Home () {
                                 .slice(offset*index, offset*index+offset)
                                 .map(movie => (
                                     <Box 
-                                        layoutId={movie.id + ""}
+                                        layoutId={"now_" + movie.id + ""}
                                         bgPhoto={makeImagePath(movie.backdrop_path, 'w500')} 
-                                        key={movie.id}
+                                        key={movie.id + 1}
                                         variants={boxVariants}
                                         whileHover="hover"
                                         transition={{type: "tween"}}
                                         initial="normal"
-                                        onClick={() => onBoxClicked(movie.id)}
+                                        onClick={() => onBoxClicked(movie.id, SliderType.N)}
                                     >
                                         <Info 
                                             variants={infoVariants}
@@ -393,14 +423,14 @@ function Home () {
                                 .slice(offset*topRatedIndex, offset*topRatedIndex+offset)
                                 .map(movie => (
                                     <Box 
-                                        layoutId={movie.id + ""}
+                                        layoutId={"top_" + movie.id + ""}
                                         bgPhoto={makeImagePath(movie.backdrop_path, 'w500')} 
-                                        key={movie.id}
+                                        key={movie.id + 2}
                                         variants={boxVariants}
                                         whileHover="hover"
                                         transition={{type: "tween"}}
                                         initial="normal"
-                                        onClick={() => onBoxClicked(movie.id)}
+                                        onClick={() => onBoxClicked(movie.id, SliderType.T)}
                                     >
                                         <Info 
                                             variants={infoVariants}
@@ -435,14 +465,14 @@ function Home () {
                                 .slice(offset*upComingIndex, offset*upComingIndex+offset)
                                 .map(movie => (
                                     <Box 
-                                        layoutId={movie.id + ""}
+                                        layoutId={"upcoming_" + movie.id + ""}
                                         bgPhoto={makeImagePath(movie.backdrop_path, 'w500')} 
-                                        key={movie.id}
+                                        key={movie.id + 3}
                                         variants={boxVariants}
                                         whileHover="hover"
                                         transition={{type: "tween"}}
                                         initial="normal"
-                                        onClick={() => onBoxClicked(movie.id)}
+                                        onClick={() => onBoxClicked(movie.id, SliderType.U)}
                                     >
                                         <Info 
                                             variants={infoVariants}
@@ -477,14 +507,14 @@ function Home () {
                                 .slice(offset*popularIndex, offset*popularIndex+offset)
                                 .map(movie => (
                                     <Box 
-                                        layoutId={movie.id + ""}
+                                        layoutId={"popular_" + movie.id + ""}
                                         bgPhoto={makeImagePath(movie.backdrop_path, 'w500')} 
-                                        key={movie.id}
+                                        key={movie.id + 4}
                                         variants={boxVariants}
                                         whileHover="hover"
                                         transition={{type: "tween"}}
                                         initial="normal"
-                                        onClick={() => onBoxClicked(movie.id)}
+                                        onClick={() => onBoxClicked(movie.id, SliderType.P)}
                                     >
                                         <Info 
                                             variants={infoVariants}
@@ -503,16 +533,66 @@ function Home () {
                     {bigMovieMatch ? (
                         <>
                             <Overlay onClick={onOverlayClick} exit={{opacity: 0}} animate={{opacity: 1}} />
-                            <BigMovie 
-                                layoutId={bigMovieMatch.params.movieId}
-                                style={{top: scrollY.get() + 100}}
-                            >
-                                {clickedMovie && <>
-                                    <BigCover style={{backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(clickedMovie.backdrop_path, "w500")})`}} />
-                                    <BigTitle>{clickedMovie.title}</BigTitle>
-                                    <BigOverview>{clickedMovie.overview}</BigOverview>
-                                </>}
-                            </BigMovie>
+                            { sliderType === null && 
+                                <BigMovie 
+                                    layoutId={bigMovieMatch.params.movieId}
+                                    style={{top: scrollY.get() + 100}}
+                                >
+                                    {clickedMovie && <>
+                                        <BigCover style={{backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(clickedMovie.backdrop_path, "w500")})`}} />
+                                        <BigTitle>{clickedMovie.title}</BigTitle>
+                                        <BigOverview>{clickedMovie.overview}</BigOverview>
+                                    </>}
+                                </BigMovie>
+                            } 
+                            { sliderType === SliderType.N && 
+                                <BigMovie 
+                                    layoutId={"now_" + bigMovieMatch.params.movieId}
+                                    style={{top: scrollY.get() + 100}}
+                                >
+                                    {nowClickedMovie && <>
+                                        <BigCover style={{backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(nowClickedMovie.backdrop_path, "w500")})`}} />
+                                        <BigTitle>{nowClickedMovie.title}</BigTitle>
+                                        <BigOverview>{nowClickedMovie.overview}</BigOverview>
+                                    </>}
+                                </BigMovie>
+                            }
+                            { sliderType === SliderType.T &&
+                                <BigMovie 
+                                    layoutId={"top_" + bigMovieMatch.params.movieId}
+                                    style={{top: scrollY.get() + 100}}
+                                >
+                                    {topRatedClickedMovie && <>
+                                        <BigCover style={{backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(topRatedClickedMovie.backdrop_path, "w500")})`}} />
+                                        <BigTitle>{topRatedClickedMovie.title}</BigTitle>
+                                        <BigOverview>{topRatedClickedMovie.overview}</BigOverview>
+                                    </>}
+                                </BigMovie>
+                            }
+                            { sliderType === SliderType.U &&
+                                <BigMovie 
+                                    layoutId={"upcoming_" + bigMovieMatch.params.movieId}
+                                    style={{top: scrollY.get() + 100}}
+                                >
+                                    {upComingClickedMovie && <>
+                                        <BigCover style={{backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(upComingClickedMovie.backdrop_path, "w500")})`}} />
+                                        <BigTitle>{upComingClickedMovie.title}</BigTitle>
+                                        <BigOverview>{upComingClickedMovie.overview}</BigOverview>
+                                    </>}
+                                </BigMovie>
+                            }
+                            { sliderType === SliderType.P &&
+                                <BigMovie 
+                                    layoutId={"popular_" + bigMovieMatch.params.movieId}
+                                    style={{top: scrollY.get() + 100}}
+                                >
+                                    {popularClickedMovied && <>
+                                        <BigCover style={{backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(popularClickedMovied.backdrop_path, "w500")})`}} />
+                                        <BigTitle>{popularClickedMovied.title}</BigTitle>
+                                        <BigOverview>{popularClickedMovied.overview}</BigOverview>
+                                    </>}
+                                </BigMovie>
+                            }
                     </>
                     ) : null}
                 </AnimatePresence>
