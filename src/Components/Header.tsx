@@ -130,7 +130,6 @@ function Header() {
     const tvMatch = useRouteMatch("/tv")
     const inputAnimation = useAnimation()
     const navAnimation = useAnimation()
-    const searchInput = useRef<HTMLInputElement>(null)
     const {scrollY} = useViewportScroll()
     const toggleSearch = () => {
         if (searchOpen) {
@@ -141,8 +140,8 @@ function Header() {
             inputAnimation.start({
                 scaleX: 1
             })
+            setFocus("keyword")
         }
-        searchInput?.current?.focus()
         setSearchOpen(prev => !prev)
     }
     useEffect(() => {
@@ -155,7 +154,7 @@ function Header() {
         })
     }, [navAnimation, scrollY])
     const history = useHistory()
-    const {register, handleSubmit} = useForm<IForm>()
+    const {register, handleSubmit, setFocus, setValue} = useForm<IForm>()
     const onValid = (data:IForm) => {
         history.push(`/search?keyword=${data.keyword}`)
     }
@@ -210,10 +209,14 @@ function Header() {
                     ></path>
                 </motion.svg>
                 <Input
-                    {...register("keyword", {required: true, minLength: 2})}
+                    {...register("keyword", {required: true, minLength: 2, onBlur: () => {
+                        setSearchOpen(false) 
+                        setValue("keyword", "")
+                    }})}
                     initial={{ scaleX: 0 }}
                     animate={inputAnimation}
                     transition={{type:"linear"}}
+                    whileFocus={{ scaleX: 1 }}
                     placeholder="search for movie or tv show..."
                 />
             </Search>

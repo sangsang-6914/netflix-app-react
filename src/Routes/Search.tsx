@@ -1,8 +1,11 @@
-import { motion } from "framer-motion"
-import { useQuery } from "react-query"
+import { AnimatePresence, motion, useViewportScroll } from "framer-motion"
+import { useEffect, useState } from "react"
+import { QueryClient, useQuery } from "react-query"
 import { useHistory, useLocation, useRouteMatch } from "react-router-dom"
+import { useRecoilState } from "recoil"
 import styled from "styled-components"
 import { ISearchMoviesResult, ISearchTvsResult, searchMovies, searchTvs } from "../Apis/searchApi"
+import { keywordState } from "../Store/atom"
 import { makeImagePath } from "../utils"
 
 const Wrapper = styled.div`
@@ -59,10 +62,11 @@ const Tv = styled(motion.div)<{bgphoto: string}>`
 `
 
 const Loader = styled.div`
-    font-size: 36pt;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
+    height: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18pt;
 `
 
 const Info = styled(motion.div)`
@@ -83,22 +87,41 @@ const Overlay = styled(motion.div)`
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.7);
+    opacity: 0;
 `
 
 const BigContent = styled(motion.div)`
-    
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    top: 100px;
+    height: 80vh;
+    width: 40vw;
+    border-radius: 15px;
+    overflow: hidden;
+    background-color: ${props => props.theme.black.lighter};
 `
 
-const BigCover = styled.div`
-
+const BigCover = styled.div<{bgphoto: string}>`
+    width: 100%;
+    height: 400px;
+    background-image: linear-gradient(to top, black, transparent), url(${props => props.bgphoto});
+    background-size: cover;
 `
 
 const BigTitle = styled.div`
-    
+    position: relative;
+    top: -60px;
+    font-size: 36px;
+    padding: 15px;
 `
 
 const BigOverview = styled.div`
-    
+    padding: 15px;
+    color: ${props => props.theme.white.lighter};
+    position: relative;
+    top: -70px;
 `
 
 const contentVariants = {
@@ -127,16 +150,41 @@ const infoVariants = {
     }
 }
 
+const overlayVariants = {
+    normal: {
+        opacity: 0
+    },
+    start: {
+        opacity: 1
+    },
+    exit: {
+        opacity: 0
+    }
+}
+
+enum ContentType {
+    "M" = "M",
+    "T" = "T"
+}
+
 function Search() {
     const location = useLocation()
-    const keyword = new URLSearchParams(location.search).get("keyword")
-    const {data: moviesData, isLoading: moviesLoading} = useQuery<ISearchMoviesResult>("searchMovies", () => searchMovies(keyword || ""))
-    console.log(moviesData)
-    const {data: tvsData, isLoading: tvsLoading} = useQuery<ISearchTvsResult>("searchTvs", () => searchTvs(keyword || ""))
-    const bigContentMatch = useRouteMatch("/search/:contentId")
+    let keyword = new URLSearchParams(location.search).get("keyword")
+
+    const {data: moviesData, isLoading: moviesLoading} = useQuery<ISearchMoviesResult>("searchMovies", () => searchMovies(keyword || "all"))
+    const {data: tvsData, isLoading: tvsLoading} = useQuery<ISearchTvsResult>("searchTvs", () => searchTvs(keyword || "all"))
+    const bigContentMatch = useRouteMatch<{contentId: string}>("/search/:contentId")
     const history = useHistory()
 
-    const onContentClick = (contentId: number) => {
+    const [contentType, setContentType] = useState<ContentType | null>(null)
+    const {scrollY} = useViewportScroll()
+
+    const onContentClick = (contentId: number, contentType: ContentType) => {
+        if (contentType === ContentType.M) {
+            setContentType(ContentType.M)
+        } else {
+            setContentType(ContentType.T)
+        }
         history.push(`/search/${contentId}`)
     }
 
@@ -144,12 +192,18 @@ function Search() {
         history.push('/search')
     }
 
+    const clickedMovie = ContentType.M === contentType && bigContentMatch && bigContentMatch.params.contentId &&
+    moviesData?.results.find(movie => String(movie.id) === bigContentMatch.params.contentId)
+
+    const clickedTv = ContentType.T === contentType && bigContentMatch && bigContentMatch.params.contentId &&
+    tvsData?.results.find(tv => String(tv.id) === bigContentMatch.params.contentId)
+
     const isLoading = moviesLoading || tvsLoading
     return (
         <>
         <Wrapper>
             {
-                isLoading ? <Loader>검색중입니다..</Loader> :
+                isLoading ? <Loader>Loading...</Loader> :
                 (
                     <>
                     <MovieHeader>{keyword} 관련 영화 콘텐츠</MovieHeader>
@@ -159,11 +213,13 @@ function Search() {
                                 .map(movie => (
                                     <Movie 
                                         variants={contentVariants}
+                                        key={movie.id}
                                         whileHover="hover"
                                         animate="normal"
                                         transition={{type: "tween"}}
-                                        onClick={() => onContentClick(movie.id)}
+                                        onClick={() => onContentClick(movie.id, ContentType.M)}
                                         bgphoto={makeImagePath(movie.backdrop_path, 'w500')}
+                                        layoutId={movie.id + ""}
                                     >
                                         <Info
                                             variants={infoVariants}
@@ -182,10 +238,12 @@ function Search() {
                                     <Tv 
                                         variants={contentVariants}
                                         whileHover="hover"
+                                        key={tv.id}
                                         animate="normal"
                                         transition={{type: "tween"}}
-                                        onClick={() => onContentClick(tv.id)}
+                                        onClick={() => onContentClick(tv.id, ContentType.T)}
                                         bgphoto={makeImagePath(tv.backdrop_path, 'w500')} 
+                                        layoutId={tv.id + ""}
                                     >
                                         <Info
                                             variants={infoVariants}
@@ -200,11 +258,47 @@ function Search() {
                 )
             }
         </Wrapper>
+        <AnimatePresence>
         {
             bigContentMatch? (
-                <Overlay onClick={onOverlayClick} />
+                <>
+                <Overlay variants={overlayVariants} initial="normal" animate="start" exit="exit" onClick={onOverlayClick} />
+                { contentType === ContentType.M && clickedMovie && (
+                    <>
+                        <BigContent
+                            layoutId={clickedMovie.id + ""}
+                            style={{top: scrollY.get() + 100}}
+                        >
+                            
+                            <BigCover
+                                bgphoto={makeImagePath(clickedMovie.backdrop_path, 'w500')}
+                            />
+                            <BigTitle>{clickedMovie.title}</BigTitle>
+                            <BigOverview>{clickedMovie.overview}</BigOverview>
+                        
+                        </BigContent>
+                    </>
+                )}
+                { contentType === ContentType.T && clickedTv &&(
+                    <>
+                        <BigContent
+                            layoutId={clickedTv.id + ""}
+                            style={{top: scrollY.get() + 100}}
+                        >
+                            
+                            <BigCover
+                                bgphoto={makeImagePath(clickedTv.backdrop_path, 'w500')}
+                            />
+                            <BigTitle>{clickedTv.name}</BigTitle>
+                            <BigOverview>{clickedTv.overview}</BigOverview>
+                        
+                        </BigContent>
+                    </>
+                )}
+                </>
             ): null
         }
+        </AnimatePresence>
         </>
     )
 }

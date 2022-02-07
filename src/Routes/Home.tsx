@@ -213,12 +213,10 @@ function Home () {
     const bigMovieMatch = useRouteMatch<{movieId: string}>("/movies/:movieId")
     const {scrollY} = useViewportScroll()
     const {data: nowMovies, isLoading: nowMoviesLoading} = useQuery<IGetMoviesResult>(["movies", "nowPlaying"], getMovies)
-    console.log(nowMovies)
     const {data: latestMovie, isLoading: latestMovieLoading} = useQuery<ILatestMovieResult>(["movies", "lates"], getLatestMovies)
     const {data: topRatedMovies, isLoading: topRatedMoviesLoading} = useQuery<ITopRatedMoviesResult>(["movies", "topRated"], getTopRatedMovies)
     const {data: upComingMovies, isLoading: upComingMoviesLoading} = useQuery<IUpComingMoviesResult>(["movies", "upComing"], getUpcomingMovies)
     const {data: popularMovies, isLoading: popularMoviesLoading} = useQuery<IPopularMoviesResult>(["movies", "popular"], getPopularMovies)
-    console.log(popularMovies)
     
     const [index, setIndex] = useState(0)
     const [back, setBack] = useState(false)
@@ -304,12 +302,8 @@ function Home () {
         history.push('/')
     }
 
-    console.log(sliderType)
-
     const clickedMovie = sliderType === null && bigMovieMatch?.params.movieId && 
         latestMovie
-
-    console.log(clickedMovie)
 
     const nowClickedMovie = sliderType === SliderType.N && bigMovieMatch?.params.movieId &&
         nowMovies?.results.find(movie => String(movie.id) === bigMovieMatch.params.movieId)
