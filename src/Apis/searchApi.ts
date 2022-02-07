@@ -18,8 +18,8 @@ export interface ISearchTvsResult {
     total_results: number;
 }
 
-export function searchMovies(keyword: string) {
-    return fetch(`${BASE_PATH}/movie?api_key=${API_KEY}&language=en-US&query=${keyword}&page=1`).then(
+export function searchMovies(keyword: string, page: string = "1") {
+    return fetch(`${BASE_PATH}/movie?api_key=${API_KEY}&language=en-US&query=${keyword}&page=${page}`).then(
         response => response.json()
     )
 }

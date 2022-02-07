@@ -6,13 +6,10 @@ export interface ITvs {
     first_air_date: string;
     id: number;
     name: string;
-    original_language: string;
     original_name: string;
     overview: string;
     popularity: number;
     poster_path: string;
-    vote_average: number;
-    vote_count: number;
 }
 
 export interface ITvsResult {
@@ -65,6 +62,12 @@ export function getPopularTvs() {
 // 오늘 방영 예정 프로그램
 export function getTodayTvs() {
     return fetch(`${BASE_PATH}/airing_today?api_key=${API_KEY}&language=en-US`).then(
+        response => response.json()
+    )
+}
+
+export function getTv(tvId: string) {
+    return fetch(`${BASE_PATH}/${tvId}?api_key=${API_KEY}&language=en-US`).then(
         response => response.json()
     )
 }

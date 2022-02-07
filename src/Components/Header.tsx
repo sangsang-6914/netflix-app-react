@@ -40,7 +40,7 @@ const Items = styled.ul`
 
 const Item = styled.li`
   margin-right: 20px;
-  color: ${(props) => props.theme.white.darker};
+  color: #cac9c9;
   transition: color 0.3s ease-in-out;
   position: relative;
   display: flex;
@@ -156,7 +156,8 @@ function Header() {
     const history = useHistory()
     const {register, handleSubmit, setFocus, setValue} = useForm<IForm>()
     const onValid = (data:IForm) => {
-        history.push(`/search?keyword=${data.keyword}`)
+        // history.push(`/search?keyword=${data.keyword}`)
+        window.location.replace(`/search?keyword=${data.keyword}`)
     }
     return (
         <Nav variants={navVariants} initial="top" animate={navAnimation}>
@@ -217,7 +218,7 @@ function Header() {
                     animate={inputAnimation}
                     transition={{type:"linear"}}
                     whileFocus={{ scaleX: 1 }}
-                    placeholder="search for movie or tv show..."
+                    placeholder="검색어를 입력하세요.."
                 />
             </Search>
         </Col>

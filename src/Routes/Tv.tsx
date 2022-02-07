@@ -1,10 +1,11 @@
-import { AnimatePresence, motion, useViewportScroll } from "framer-motion"
-import { useState, useEffect } from "react"
+import { AnimatePresence, motion } from "framer-motion"
+import { useState } from "react"
 import { FcNext, FcPrevious } from "react-icons/fc"
 import { useQuery } from "react-query"
 import { useRouteMatch, useHistory } from "react-router-dom"
 import styled from "styled-components"
 import { getLatestTv, getOnAirTvs, getPopularTvs, getTopRatedTvs, ILatestTvResult, ITvsResult } from "../Apis/tvApi"
+import TvDetail from "../Components/TvDetail"
 import { makeImagePath } from "../utils"
 
 const Wrapper = styled.div`
@@ -87,7 +88,7 @@ const PrevBtn = styled(motion.div)`
     position: absolute;
     left: 5px;
     top: 100px;
-    opacity: 0;
+    opacity: 0.07;
     cursor: pointer;
 `
 
@@ -95,7 +96,7 @@ const NextBtn = styled(motion.div)`
     position: absolute;
     right: 5px;
     top: 100px;
-    opacity: 0;
+    opacity: 0.07;
     cursor: pointer;
 `
 
@@ -119,41 +120,6 @@ const Overlay = styled(motion.div)`
     height: 100%;
     background-color: rgba(0,0,0,0.7);
     opacity: 0;
-`
-
-const BigTv = styled(motion.div)`
-    position: absolute;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    width: 40vw;
-    height: 80vh;
-    border-radius: 15px;
-    background-color: ${props => props.theme.black.lighter};
-    overflow: hidden;
-`
-
-const BigCover = styled.div<{bgphoto: string}>`
-    background-image: linear-gradient(to top, black, transparent), url(${props => props.bgphoto});
-    background-size: cover;
-    background-position: center center;
-    height: 400px;
-    width: 100%;
-`
-
-const BigTitle = styled.div`
-    top: -60px;
-    position: relative;
-    font-size: 36px;
-    padding: 15px;
-    color: ${props => props.theme.white.lighter};
-`
-
-const BigOverview = styled.div`
-    padding: 20px;
-    color: ${props => props.theme.white.lighter};
-    position: relative;
-    top: -70px;
 `
 
 const rowVariants = {
@@ -224,8 +190,6 @@ function Tv() {
 
     const bigTvMatch = useRouteMatch<{tvId: string}>("/tv/:tvId")
     const history = useHistory()
-
-    const {scrollY} = useViewportScroll()
 
     const isLoading = onAirTvsLoading || topRatedLoading || latsetLoading || popularLoading || onAirTvsLoading
 
@@ -339,50 +303,7 @@ function Tv() {
                         <Overview>{onAirTvs?.results[0].overview}</Overview>
                     </Banner>
                     <TopSlider>
-                    <SliderTitle>오늘 방영 예정 콘텐츠</SliderTitle>
-                        <PrevBtn onClick={() => changeOnAiringSlider("dec")} whileHover={{opacity: 1}}>
-                            <FcPrevious size="50" />    
-                        </PrevBtn>
-                        <AnimatePresence custom={back} initial={false} onExitComplete={() => setLeaving(false)}>
-                            <Row
-                                variants={rowVariants}
-                                initial="hidden"
-                                animate="visible"
-                                exit="invisible"
-                                transition={{type: "tween", duration: 0.7}}
-                                custom={back}
-                                key={onAiringIndex}
-                            >
-                                {
-                                    onAirlingTvs?.results
-                                    .slice(onAiringIndex*offset, onAiringIndex*offset+offset)
-                                    .map(tv => (
-                                        <Box
-                                            bgphoto={makeImagePath(tv.backdrop_path, 'w500')}
-                                            key={tv.id}
-                                            variants={boxVariants}
-                                            whileHover="hover"
-                                            animate="normal"
-                                            transition={{type: "tween"}}
-                                            layoutId={`onairing_${tv.id}`}
-                                            onClick={() => onClickTv(tv.id, SliderType.OA)}
-                                        >
-                                            <Info
-                                                variants={infoVariants}
-                                            >
-                                                <h4>{tv.name}</h4>
-                                            </Info>
-                                        </Box>    
-                                    ))
-                                }
-                            </Row>
-                        </AnimatePresence>
-                        <NextBtn onClick={() => changeOnAiringSlider("inc")} whileHover={{opacity: 1}}>
-                            <FcNext size="50" />
-                        </NextBtn>
-                    </TopSlider>
-                    <OtherSlider>
-                        <SliderTitle>현재 방영중 콘텐츠</SliderTitle>
+                    <SliderTitle>현재 방영중 콘텐츠</SliderTitle>
                         <PrevBtn onClick={() => changeSlider("dec")} whileHover={{opacity: 1}}>
                             <FcPrevious size="50" />
                         </PrevBtn>
@@ -402,7 +323,7 @@ function Tv() {
                                         .slice(index*offset, index*offset+offset)
                                         .map(tv => (
                                             <Box
-                                                bgphoto={makeImagePath(tv.backdrop_path, 'w500')}
+                                                bgphoto={makeImagePath(tv.backdrop_path || "/8Xs20y8gFR0W9u8Yy9NKdpZtSu7.jpg", 'w500')}
                                                 key={tv.id}
                                                 variants={boxVariants}
                                                 whileHover="hover"
@@ -422,6 +343,49 @@ function Tv() {
                             </Row>
                         </AnimatePresence>
                         <NextBtn onClick={() => changeSlider("inc")} whileHover={{opacity: 1}}>
+                            <FcNext size="50" />
+                        </NextBtn>
+                    </TopSlider>
+                    <OtherSlider>
+                    <SliderTitle>오늘 방영 예정 콘텐츠</SliderTitle>
+                        <PrevBtn onClick={() => changeOnAiringSlider("dec")} whileHover={{opacity: 1}}>
+                            <FcPrevious size="50" />    
+                        </PrevBtn>
+                        <AnimatePresence custom={back} initial={false} onExitComplete={() => setLeaving(false)}>
+                            <Row
+                                variants={rowVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="invisible"
+                                transition={{type: "tween", duration: 0.7}}
+                                custom={back}
+                                key={onAiringIndex}
+                            >
+                                {
+                                    onAirlingTvs?.results
+                                    .slice(onAiringIndex*offset, onAiringIndex*offset+offset)
+                                    .map(tv => (
+                                        <Box
+                                            bgphoto={makeImagePath(tv.backdrop_path || "/8Xs20y8gFR0W9u8Yy9NKdpZtSu7.jpg", 'w500')}
+                                            key={tv.id}
+                                            variants={boxVariants}
+                                            whileHover="hover"
+                                            animate="normal"
+                                            transition={{type: "tween"}}
+                                            layoutId={`onairing_${tv.id}`}
+                                            onClick={() => onClickTv(tv.id, SliderType.OA)}
+                                        >
+                                            <Info
+                                                variants={infoVariants}
+                                            >
+                                                <h4>{tv.name}</h4>
+                                            </Info>
+                                        </Box>    
+                                    ))
+                                }
+                            </Row>
+                        </AnimatePresence>
+                        <NextBtn onClick={() => changeOnAiringSlider("inc")} whileHover={{opacity: 1}}>
                             <FcNext size="50" />
                         </NextBtn>
                     </OtherSlider>
@@ -445,7 +409,7 @@ function Tv() {
                                     .slice(offset*topRatedIndex, offset*topRatedIndex+offset)
                                     .map(tv => (
                                         <Box
-                                            bgphoto={makeImagePath(tv.backdrop_path, 'w500')}
+                                            bgphoto={makeImagePath(tv.backdrop_path || "/8Xs20y8gFR0W9u8Yy9NKdpZtSu7.jpg", 'w500')}
                                             key={tv.id}
                                             variants={boxVariants}
                                             whileHover="hover"
@@ -488,7 +452,7 @@ function Tv() {
                                     .slice(popularIndex*offset, popularIndex*offset+offset)
                                     .map(tv => (
                                        <Box
-                                         bgphoto={makeImagePath(tv.backdrop_path, 'w500')} 
+                                         bgphoto={makeImagePath(tv.backdrop_path || "/8Xs20y8gFR0W9u8Yy9NKdpZtSu7.jpg", 'w500')} 
                                          key={tv.id}   
                                             variants={boxVariants}
                                             whileHover="hover"
@@ -519,7 +483,7 @@ function Tv() {
                                 whileHover="hover"
                                 animate="normal"
                                 transition={{type: "tween"}}
-                                bgphoto={makeImagePath(latestTv?.backdrop_path || "", 'w500')}
+                                bgphoto={makeImagePath(latestTv?.backdrop_path || "/8Xs20y8gFR0W9u8Yy9NKdpZtSu7.jpg", 'w500')}
                                 onClick={() => onClickTv(latestTv?.id || 0)}
                                 layoutId={latestTv?.id + ""}
                             >
@@ -541,68 +505,23 @@ function Tv() {
                                     onClick={onOverlayClick}
                                 />
                                 { sliderType === SliderType.O && clickedOnAirTv && <>
-                                    <BigTv 
-                                        style={{top: scrollY.get() + 100}}
-                                        layoutId={"onair_" + clickedOnAirTv.id}
-                                    >
-                                        <BigCover 
-                                            bgphoto={makeImagePath(clickedOnAirTv.backdrop_path, 'w500')}
-                                        />
-                                        <BigTitle>{clickedOnAirTv.name}</BigTitle>
-                                        <BigOverview>{clickedOnAirTv.overview}</BigOverview>
-                                    </BigTv>
+                                    <TvDetail clickedTv={clickedOnAirTv} type="onair" />
                                 </>
                                 }
                                 { sliderType === SliderType.T && clickedTopRatedTv && <>
-                                    <BigTv 
-                                        style={{top: scrollY.get() + 100}}
-                                        layoutId={"top_" + clickedTopRatedTv.id}
-                                    >
-                                        <BigCover 
-                                            bgphoto={makeImagePath(clickedTopRatedTv.backdrop_path, 'w500')}
-                                        />
-                                        <BigTitle>{clickedTopRatedTv.name}</BigTitle>
-                                        <BigOverview>{clickedTopRatedTv.overview}</BigOverview>
-                                    </BigTv>
+                                    <TvDetail clickedTv={clickedTopRatedTv} type="top" />
                                 </>
                                 }
                                 { sliderType === SliderType.P && clickedPopularTv && <>
-                                    <BigTv 
-                                        style={{top: scrollY.get() + 100}}
-                                        layoutId={"popular_" + clickedPopularTv.id}
-                                    >
-                                        <BigCover 
-                                            bgphoto={makeImagePath(clickedPopularTv.backdrop_path, 'w500')}
-                                        />
-                                        <BigTitle>{clickedPopularTv.name}</BigTitle>
-                                        <BigOverview>{clickedPopularTv.overview}</BigOverview>
-                                    </BigTv>
+                                    <TvDetail clickedTv={clickedPopularTv} type="popular" />
                                 </>
                                 }
                                 { sliderType === SliderType.OA && clickedOnAiringTv && <>
-                                    <BigTv 
-                                        style={{top: scrollY.get() + 100}}
-                                        layoutId={"onairing_" + clickedOnAiringTv.id}
-                                    >
-                                        <BigCover 
-                                            bgphoto={makeImagePath(clickedOnAiringTv.backdrop_path, 'w500')}
-                                        />
-                                        <BigTitle>{clickedOnAiringTv.name}</BigTitle>
-                                        <BigOverview>{clickedOnAiringTv.overview}</BigOverview>
-                                    </BigTv>
+                                    <TvDetail clickedTv={clickedOnAiringTv} type="onairing" />
                                 </>
                                 }
                                 { sliderType === null && clickedLatestTv &&  <>
-                                    <BigTv 
-                                        style={{top: scrollY.get() + 100}}
-                                        layoutId={clickedLatestTv.id + ""}
-                                    >
-                                        <BigCover 
-                                            bgphoto={makeImagePath(clickedLatestTv.backdrop_path, 'w500')}
-                                        />
-                                        <BigTitle>{clickedLatestTv.name}</BigTitle>
-                                        <BigOverview>{clickedLatestTv.overview}</BigOverview>
-                                    </BigTv>
+                                    <TvDetail clickedTv={clickedLatestTv} type="latest" />
                                 </>
                                 }
                             </>

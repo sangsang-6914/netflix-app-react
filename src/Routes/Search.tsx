@@ -1,11 +1,11 @@
-import { AnimatePresence, motion, useViewportScroll } from "framer-motion"
-import { useEffect, useState } from "react"
-import { QueryClient, useQuery } from "react-query"
+import { AnimatePresence, motion } from "framer-motion"
+import { useState } from "react"
+import { useQuery } from "react-query"
 import { useHistory, useLocation, useRouteMatch } from "react-router-dom"
-import { useRecoilState } from "recoil"
 import styled from "styled-components"
 import { ISearchMoviesResult, ISearchTvsResult, searchMovies, searchTvs } from "../Apis/searchApi"
-import { keywordState } from "../Store/atom"
+import MovieDetail from "../Components/MovieDetail"
+import TvDetail from "../Components/TvDetail"
 import { makeImagePath } from "../utils"
 
 const Wrapper = styled.div`
@@ -30,7 +30,7 @@ const MovieList = styled.div`
 
 const Movie = styled(motion.div)<{bgphoto: string}>`
     height: 150px;
-    margin-bottom: 50px;
+    margin-bottom: 70px;
     background-color: white;
     border-radius: 5px;
     background-image: url(${props => props.bgphoto});
@@ -53,7 +53,7 @@ const TvList = styled.div`
 
 const Tv = styled(motion.div)<{bgphoto: string}>`
     height: 150px;
-    margin-bottom: 30px;
+    margin-bottom: 70px;
     background-color: white;
     border-radius: 5px;
     background-image: url(${props => props.bgphoto});
@@ -88,40 +88,6 @@ const Overlay = styled(motion.div)`
     height: 100%;
     background-color: rgba(0,0,0,0.7);
     opacity: 0;
-`
-
-const BigContent = styled(motion.div)`
-    position: absolute;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    top: 100px;
-    height: 80vh;
-    width: 40vw;
-    border-radius: 15px;
-    overflow: hidden;
-    background-color: ${props => props.theme.black.lighter};
-`
-
-const BigCover = styled.div<{bgphoto: string}>`
-    width: 100%;
-    height: 400px;
-    background-image: linear-gradient(to top, black, transparent), url(${props => props.bgphoto});
-    background-size: cover;
-`
-
-const BigTitle = styled.div`
-    position: relative;
-    top: -60px;
-    font-size: 36px;
-    padding: 15px;
-`
-
-const BigOverview = styled.div`
-    padding: 15px;
-    color: ${props => props.theme.white.lighter};
-    position: relative;
-    top: -70px;
 `
 
 const contentVariants = {
@@ -177,7 +143,6 @@ function Search() {
     const history = useHistory()
 
     const [contentType, setContentType] = useState<ContentType | null>(null)
-    const {scrollY} = useViewportScroll()
 
     const onContentClick = (contentId: number, contentType: ContentType) => {
         if (contentType === ContentType.M) {
@@ -185,11 +150,11 @@ function Search() {
         } else {
             setContentType(ContentType.T)
         }
-        history.push(`/search/${contentId}`)
+        history.push(`/search/${contentId}?keyword=${keyword}`)
     }
 
     const onOverlayClick = () => {
-        history.push('/search')
+        history.push(`/search?keyword=${keyword}`)
     }
 
     const clickedMovie = ContentType.M === contentType && bigContentMatch && bigContentMatch.params.contentId &&
@@ -218,7 +183,7 @@ function Search() {
                                         animate="normal"
                                         transition={{type: "tween"}}
                                         onClick={() => onContentClick(movie.id, ContentType.M)}
-                                        bgphoto={makeImagePath(movie.backdrop_path, 'w500')}
+                                        bgphoto={makeImagePath(movie.backdrop_path || "/AmLpWYm9R3Ur2FLPgj5CH3wR8wp.jpg", 'w500')}
                                         layoutId={movie.id + ""}
                                     >
                                         <Info
@@ -242,7 +207,7 @@ function Search() {
                                         animate="normal"
                                         transition={{type: "tween"}}
                                         onClick={() => onContentClick(tv.id, ContentType.T)}
-                                        bgphoto={makeImagePath(tv.backdrop_path, 'w500')} 
+                                        bgphoto={makeImagePath(tv.backdrop_path || "/8Xs20y8gFR0W9u8Yy9NKdpZtSu7.jpg", 'w500')} 
                                         layoutId={tv.id + ""}
                                     >
                                         <Info
@@ -265,34 +230,12 @@ function Search() {
                 <Overlay variants={overlayVariants} initial="normal" animate="start" exit="exit" onClick={onOverlayClick} />
                 { contentType === ContentType.M && clickedMovie && (
                     <>
-                        <BigContent
-                            layoutId={clickedMovie.id + ""}
-                            style={{top: scrollY.get() + 100}}
-                        >
-                            
-                            <BigCover
-                                bgphoto={makeImagePath(clickedMovie.backdrop_path, 'w500')}
-                            />
-                            <BigTitle>{clickedMovie.title}</BigTitle>
-                            <BigOverview>{clickedMovie.overview}</BigOverview>
-                        
-                        </BigContent>
+                        <MovieDetail clickedMovie={clickedMovie} type="search" keyword={keyword || ""} />
                     </>
                 )}
                 { contentType === ContentType.T && clickedTv &&(
                     <>
-                        <BigContent
-                            layoutId={clickedTv.id + ""}
-                            style={{top: scrollY.get() + 100}}
-                        >
-                            
-                            <BigCover
-                                bgphoto={makeImagePath(clickedTv.backdrop_path, 'w500')}
-                            />
-                            <BigTitle>{clickedTv.name}</BigTitle>
-                            <BigOverview>{clickedTv.overview}</BigOverview>
-                        
-                        </BigContent>
+                        <TvDetail clickedTv={clickedTv} type="search" keyword={keyword || ""} />
                     </>
                 )}
                 </>
