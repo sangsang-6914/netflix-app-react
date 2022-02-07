@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/MovieNTvDatabase/static/js/main.87f67942.js",
+    "main.js": "/MovieNTvDatabase/static/js/main.f27272ea.js",
     "index.html": "/MovieNTvDatabase/index.html",
-    "main.87f67942.js.map": "/MovieNTvDatabase/static/js/main.87f67942.js.map"
+    "main.f27272ea.js.map": "/MovieNTvDatabase/static/js/main.f27272ea.js.map"
   },
   "entrypoints": [
-    "static/js/main.87f67942.js"
+    "static/js/main.f27272ea.js"
   ]
 }
