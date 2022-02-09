@@ -65,7 +65,9 @@ const GlobalStyle = createGlobalStyle`
     line-height: 1.2;
     color: ${props => props.theme.white.darker};
     background-color: #141414;
+    -ms-overflow-style: none; 
   }
+   ::-webkit-scrollbar { display: none; }
   a {
     text-decoration:none;
     color: inherit;

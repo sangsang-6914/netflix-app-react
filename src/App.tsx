@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet';
 import {BrowserRouter as Router, Switch, Route} from 'react-router-dom'
 import Header from './Components/Header';
 import Home from './Routes/Home';
@@ -9,6 +10,9 @@ function App() {
   return (
     <Router basename={process.env.PUBLIC_URL}>
       <Header />
+      <Helmet>
+        <title>MovieNTvDatabase</title>
+      </Helmet>
       <Switch>
         <Route path={["/tv", "/tv/:tvId"]}>
           <Tv />

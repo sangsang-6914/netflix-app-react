@@ -67,7 +67,7 @@ const PrevBtn = styled(motion.div)`
     position: absolute;
     left: 5px;
     top: 100px;
-    opacity: 0.07;
+    opacity: 0.1;
     cursor: pointer;
 `
 
@@ -75,7 +75,7 @@ const NextBtn = styled(motion.div)`
     position: absolute;
     right: 5px;
     top: 100px;
-    opacity: 0.07;
+    opacity: 0.1;
     cursor: pointer;
 `
 

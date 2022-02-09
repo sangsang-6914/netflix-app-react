@@ -16,6 +16,7 @@ const BigMovie = styled(motion.div)`
     border-radius: 15px;
     overflow: hidden;
     background-color: #141414;
+    overflow-y: scroll;
 `
 
 const BigCover = styled.div`

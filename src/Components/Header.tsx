@@ -76,6 +76,7 @@ const Search = styled.form`
 
 const Input = styled(motion.input)`
     transform-origin: right center;
+    width:218px;
     position: absolute;
     right: 0px;
     padding: 5px 10px;
